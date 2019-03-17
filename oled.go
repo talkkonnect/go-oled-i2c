@@ -194,7 +194,9 @@ func (v *Oled) init() error {
 	res, err = v.sendOledCommand(0xAF)
 
 
-	log.Println(res)
+	if res != 2 {
+		log.Println("warn Some I2C Error Result should be = 2 actual result is ",res)
+	}
 	if err != nil {
 		return err
 	}
