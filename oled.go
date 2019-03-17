@@ -10,7 +10,7 @@ const (
 	oledDefaultI2cAddress = 0x3C
 	defaultI2cBus         = 1
 
-	oledScreenWidth  = 128
+	oledScreenWidth  = 130
 	oledScreenHeight = 64
 
 	oledCommandColumnAddressing = 0x21
