@@ -6,21 +6,6 @@ import (
 )
 
 const (
-	//	Constants
-	oledDefaultI2cAddress = 0x3C
-	defaultI2cBus         = 1
-
-	oledScreenWidth  = 130
-	oledScreenHeight = 64
-
-	oledCommandColumnAddressing = 0x21
-
-	oledAddressBasePageStart = 0xB0
-
-	oledMaxRows    = 8
-	oledMaxColumns = 21
-	oledCharLength = 6
-
 	//	Registers
 	oledRegisterData    = 0x40
 	oledRegisterCommand = 0x80
@@ -30,6 +15,19 @@ const (
 	oledCommandSetHighColumn = 0x10
 	oledCommandDisplayOff    = 0xAE
 	oledCommandDisplayOn     = 0xAF
+)
+
+var (
+	OLEDDefaultI2cAddress uint8 = 0
+	OLEDDefaultI2cBus = 1
+        OLEDScreenWidth = 130
+	OLEDScreenHeight = 64
+	OLEDDisplayRows = 8
+	OLEDDisplayColumns byte = 21
+	OLEDCharLength = 6
+	OLEDCommandColumnAddressing = 0x21
+	OLEDAddressBasePageStart = 0
+	OLEDStartColumn = 1
 )
 
 var oledASCIITable = [...][6]byte{
@@ -145,7 +143,19 @@ type Oled struct {
 }
 
 // BeginOled Creates a new Oled reference
-func BeginOled() (*Oled, error) {
+func BeginOled(mOLEDDefaultI2cAddress uint8, mOLEDDefaultI2cBus int, mOLEDScreenWidth int, mOLEDScreenHeight int, mOLEDDisplayRows int, mOLEDDisplayColumns uint8, mOLEDStartColumn int, mOLEDCharLength int, mOLEDCommandColumnAddressing int, mOLEDAddressBasePageStart int)  (*Oled, error) {
+
+	OLEDDefaultI2cAddress = mOLEDDefaultI2cAddress
+	OLEDDefaultI2cBus = mOLEDDefaultI2cBus
+        OLEDScreenWidth = mOLEDScreenWidth
+	OLEDScreenHeight = mOLEDScreenHeight
+	OLEDDisplayRows = mOLEDDisplayRows
+	OLEDDisplayColumns = mOLEDDisplayColumns
+	OLEDStartColumn = mOLEDStartColumn
+	OLEDCharLength = mOLEDCharLength
+	OLEDCommandColumnAddressing = mOLEDCommandColumnAddressing
+	OLEDAddressBasePageStart = mOLEDAddressBasePageStart
+
 	res := &Oled{}
 	err := res.init()
 	if err != nil {
@@ -156,7 +166,7 @@ func BeginOled() (*Oled, error) {
 
 // Init intiializes oled display
 func (v *Oled) init() error {
-	_i2c, err := i2c.NewI2C(oledDefaultI2cAddress, defaultI2cBus)
+	_i2c, err := i2c.NewI2C(OLEDDefaultI2cAddress, OLEDDefaultI2cBus)
 	if err != nil {
 		return err
 	}
@@ -196,6 +206,7 @@ func (v *Oled) init() error {
 
 	if res != 2 {
 		log.Println("warn Some I2C Error Result should be = 2 actual result is ",res)
+		log.Printf("warn OLED I2C Address %v bus %v ",OLEDDefaultI2cAddress,OLEDDefaultI2cBus)
 	}
 	if err != nil {
 		return err
@@ -215,7 +226,7 @@ func (v *Oled) sendOledData(data int) (int, error) {
 
 // SetColumnAddressing sets the oled viewport
 func (v *Oled) SetColumnAddressing(startPixel int, endPixel int) (int, error) {
-	res, err := v.sendOledCommand(oledCommandColumnAddressing)
+	res, err := v.sendOledCommand(OLEDCommandColumnAddressing)
 	if err != nil {
 		return res, err
 	}
@@ -251,17 +262,17 @@ func (v *Oled) DisplayOn() error {
 
 // SetCursor sets the cursor at specified row and column
 func (v *Oled) SetCursor(row int, column int) error {
-	_, err := v.sendOledCommand(oledAddressBasePageStart + row)
+	_, err := v.sendOledCommand(OLEDAddressBasePageStart + row)
 	if err != nil {
 		return err
 	}
 
-	_, err = v.sendOledCommand(oledCommandSetLowColumn + (oledCharLength * column & 0x0F))
+	_, err = v.sendOledCommand(oledCommandSetLowColumn + (OLEDCharLength * column & 0x0F))
 	if err != nil {
 		return err
 	}
 
-	_, err = v.sendOledCommand(oledCommandSetHighColumn + ((oledCharLength * column >> 4) & 0x0F))
+	_, err = v.sendOledCommand(oledCommandSetHighColumn + ((OLEDCharLength * column >> 4) & 0x0F))
 	if err != nil {
 		return err
 	}
@@ -270,12 +281,12 @@ func (v *Oled) SetCursor(row int, column int) error {
 }
 
 func (v *Oled) writeBlankChars() error {
-	for row := 0; row < oledMaxRows; row++ {
+	for row := 0; row < OLEDDisplayRows; row++ {
 		err := v.SetCursor(row, 0)
 		if err != nil {
 			return err
 		}
-		for pixel := 0; pixel < oledScreenWidth; pixel++ {
+		for pixel := 0; pixel <OLEDScreenWidth; pixel++ {
 			_, err = v.sendOledData(0x00)
 			if err != nil {
 				return err
@@ -289,7 +300,7 @@ func (v *Oled) writeBlankChars() error {
 
 // Clear clears oled screen
 func (v *Oled) Clear() error {
-	if _, err := v.SetColumnAddressing(0, oledScreenWidth-1); err != nil {
+	if _, err := v.SetColumnAddressing(0,OLEDScreenWidth-1); err != nil {
 		return err
 	}
 	if err := v.writeBlankChars(); err != nil {
@@ -315,7 +326,7 @@ func (v *Oled) WriteChar(c int) error {
 		}
 	}
 	v.currentColumn++
-	if v.currentColumn > oledMaxColumns {
+	if v.currentColumn > OLEDDisplayColumns {
 		v.currentRow++
 		v.currentColumn = 0
 	}
