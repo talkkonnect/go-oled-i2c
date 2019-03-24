@@ -19,15 +19,15 @@ const (
 
 var (
 	OLEDDefaultI2cAddress uint8 = 0
-	OLEDDefaultI2cBus = 1
-        OLEDScreenWidth = 130
-	OLEDScreenHeight = 64
-	OLEDDisplayRows = 8
-	OLEDDisplayColumns byte = 21
-	OLEDCharLength = 6
-	OLEDCommandColumnAddressing = 0x21
-	OLEDAddressBasePageStart = 0
-	OLEDStartColumn = 1
+	OLEDDefaultI2cBus int
+        OLEDScreenWidth int
+	OLEDScreenHeight int
+	OLEDDisplayRows int
+	OLEDDisplayColumns byte
+	OLEDCharLength int
+	OLEDCommandColumnAddressing int
+	OLEDAddressBasePageStart int
+	OLEDStartColumn int
 )
 
 var oledASCIITable = [...][6]byte{
