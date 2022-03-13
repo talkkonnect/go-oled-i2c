@@ -321,9 +321,12 @@ func (v *Oled) WriteCharUnchecked(c int) error {
 func (v *Oled) WriteChar(c int) error {
 	index := c - 32
 	for ctr := 0; ctr < len(oledASCIITable[index]); ctr++ {
-		if _, err := v.sendOledData(int(oledASCIITable[index][ctr])); err != nil {
-			return err
-		}
+		//solve thai language causing talkkonnect to hang
+		if index < 80 {
+			if _, err := v.sendOledData(int(oledASCIITable[index][ctr])); err != nil {
+				return err
+			}
+		}	
 	}
 	v.currentColumn++
 	if v.currentColumn > OLEDDisplayColumns {
