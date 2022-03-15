@@ -321,13 +321,10 @@ func (v *Oled) WriteCharUnchecked(c int) error {
 func (v *Oled) WriteChar(c int) error {
 	index := c - 32
 	for ctr := 0; ctr < len(oledASCIITable[index]); ctr++ {
-		//solve thai language causing talkkonnect to hang
-		if index < 80 {
 			if _, err := v.sendOledData(int(oledASCIITable[index][ctr])); err != nil {
 				return err
 			}
-		}	
-	}
+	}	
 	v.currentColumn++
 	if v.currentColumn > OLEDDisplayColumns {
 		v.currentRow++
@@ -348,10 +345,13 @@ func (v *Oled) Write(message string) (int, error) {
 			}
 			continue
 		}
-		if err := v.WriteChar(int(message[ctr])); err != nil {
-			return res, err
-		}
+		//if character is higher than mapped ascii table skip displaying that character on oled screen
+		if int(message[ctr]) <= 126 {
+			if err := v.WriteChar(int(message[ctr])); err != nil {
+				return res, err
+			}
 		res++
+		}
 	}
 	return res, nil
 }
