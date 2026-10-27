@@ -250,7 +250,7 @@ func (v *Oled) init() error {
 	res, err = v.sendOledCommand(0xDB)
 	res, err = v.sendOledCommand(0x40)
 	res, err = v.sendOledCommand(0x20)
-	res, err = v.sendOledCommand(0x00)
+	res, err = v.sendOledCommand(0x02) // page addressing mode, which SetCursor relies on
 	res, err = v.sendOledCommand(0x00)
 	res, err = v.sendOledCommand(0x10)
 	res, err = v.sendOledCommand(0x8D)
